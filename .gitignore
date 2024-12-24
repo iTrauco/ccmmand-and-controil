@@ -67,6 +67,11 @@ checkpoints/
 
 # Environment variables
 .env
+secrets.env
+credentials.json
+*secrets*
+secrets*
+credentials*
 
 # Credentials
 *.pem
