@@ -1,0 +1,5 @@
+# requirements.txt
+# List your Python dependencies here.
+# Example:
+# python-rtmidi
+# obs-websocket-py
