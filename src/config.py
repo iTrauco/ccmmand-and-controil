@@ -1,5 +1,4 @@
-# config.py
-# Put any global configuration values or environment variable loading here.
+# src/config.py
 from dataclasses import dataclass
 from typing import Optional
 import os
@@ -13,10 +12,10 @@ class Config:
     LAUNCHPAD_PORT: str
 
 def load_config() -> Config:
-    load_dotenv()
+    load_dotenv('secrets.env')  # Changed from default .env to secrets.env
     return Config(
         OBS_HOST=os.getenv('OBS_HOST', 'localhost'),
         OBS_PORT=int(os.getenv('OBS_PORT', '4444')),
         OBS_PASSWORD=os.getenv('OBS_PASSWORD'),
-        LAUNCHPAD_PORT=os.getenv('LAUNCHPAD_PORT', 'Launchpad Mini MK3 LPMiniMK3 MIDI In')
+        LAUNCHPAD_PORT=os.getenv('LAUNCHPAD_PORT', 'Launchpad Mini MK3:Launchpad Mini MK3 LPMiniMK3 MI 20:1')
     )
