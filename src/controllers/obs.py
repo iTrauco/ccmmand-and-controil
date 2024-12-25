@@ -22,3 +22,23 @@ class OBSController:
             logger.info(f"Switched to scene: {scene_name}")
         except Exception as e:
             logger.error(f"Failed to switch scene: {e}")
+
+    
+    def toggle_source_visibility(self, source_name: str):
+        try:
+            # Get current visibility
+            current_scene = self.ws.call(requests.GetCurrentScene())
+            source = next((s for s in current_scene.getSources() if s['name'] == source_name), None)
+            
+            if source:
+                # Toggle visibility
+                self.ws.call(requests.SetSceneItemProperties(
+                    item=source_name,
+                    visible=not source['render']
+                ))
+                logger.info(f"Toggled visibility for source: {source_name}")
+            else:
+                logger.warning(f"Source not found in current scene: {source_name}")
+                
+        except Exception as e:
+            logger.error(f"Failed to toggle source visibility: {e}")
