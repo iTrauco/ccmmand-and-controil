@@ -4,6 +4,7 @@ from src.controllers.launchpad import LaunchpadController
 from src.controllers.obs import OBSController
 from src.services.mapping_service import MappingService
 from src.utils.logger import setup_logger
+from src.services.alias_service import AliasService
 
 logger = setup_logger()
 
@@ -18,11 +19,11 @@ def main():
     except Exception as e:
         logger.error(f"Failed to initialize controllers: {e}")
         return
+    
+    # Initialize services (only once!)
+    alias_service = AliasService()
+    mapping_service = MappingService(obs_controller=obs, alias_service=alias_service)
 
-    # Initialize mapping service
-    mapping_service = MappingService(obs)
-
-    # Set up basic controls
     # Scene controls (top row)
     scene_mappings = [
         ("Scene 1", 0, 0),
@@ -46,9 +47,14 @@ def main():
         button = mapping_service.map_source_toggle(x, y, source_name)
         launchpad.register_callback(button, mapping_service.get_action(x, y).callback)
 
+    # Add alias button (third row)
+    alias_button = mapping_service.map_alias_trigger(4, 4, "claude1")  # Changed coordinates to (4,4)
+    launchpad.register_callback(alias_button, mapping_service.get_action(4, 4).callback)
+
     logger.info("Launchpad OBS Controller started")
     logger.info("Top row (Green): Scene switching")
     logger.info("Second row (Yellow): Source toggling")
+    logger.info("Third row (Blue): Alias triggers")
     logger.info("Press Ctrl+C to exit")
 
     try:

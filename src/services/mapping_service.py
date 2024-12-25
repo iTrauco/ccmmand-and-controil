@@ -5,10 +5,14 @@ from ..models.button import LaunchpadButton
 from ..models.action import Action, ActionType
 from ..controllers.obs import OBSController
 from ..utils.constants import Colors
+from ..services.alias_service import AliasService  # Add this import
+
 
 class MappingService:
-    def __init__(self, obs_controller: OBSController):
+    # In src/services/mapping_service.py
+    def __init__(self, obs_controller: OBSController, alias_service: AliasService):
         self.obs = obs_controller
+        self.alias_service = alias_service
         self.mappings: Dict[tuple, Action] = {}
 
     def map_scene(self, x: int, y: int, scene_name: str) -> LaunchpadButton:
@@ -33,3 +37,14 @@ class MappingService:
 
     def get_action(self, x: int, y: int) -> Optional[Action]:
         return self.mappings.get((x, y))
+    
+    # Add this new method
+    def map_alias_trigger(self, x: int, y: int, alias_name: str) -> LaunchpadButton:
+        button = LaunchpadButton(x, y, Colors.RED)
+        action = Action(
+            type=ActionType.ALIAS_TRIGGER,
+            payload=alias_name,
+            callback=lambda: self.alias_service.execute_alias(alias_name)
+        )
+        self.mappings[(x, y)] = action
+        return button
