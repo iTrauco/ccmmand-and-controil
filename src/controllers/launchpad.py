@@ -5,6 +5,9 @@ from typing import Callable, Dict
 import logging
 from ..models.button import LaunchpadButton
 from ..utils.constants import MIDI_NOTE_ON, Colors
+import random
+import time
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +16,9 @@ class LaunchpadController:
         self.midi_in = rtmidi.MidiIn()
         self.midi_out = rtmidi.MidiOut()
         self.callbacks: Dict[int, Callable] = {}
+        self.dynamic_buttons: Dict[int, bool] = {}  # Track which buttons should cycle colors
         self._connect_ports(port_name)
+        self._start_color_cycle_thread()
 
     def _connect_ports(self, port_name: str):
         in_ports = self.midi_in.get_ports()
@@ -44,3 +49,27 @@ class LaunchpadController:
     def register_callback(self, button: LaunchpadButton, callback: Callable):
         self.callbacks[button.note] = callback
         self.set_button_color(button)  # Set initial color
+
+
+    def _start_color_cycle_thread(self):
+        def cycle_colors():
+            while True:
+                for note, should_cycle in self.dynamic_buttons.items():
+                    if should_cycle:
+                        # Choose a random vibrant color
+                        color = random.choice([
+                            Colors.RED,
+                            Colors.GREEN,
+                            Colors.YELLOW,
+                            Colors.BLUE
+                        ])
+                        self.midi_out.send_message([MIDI_NOTE_ON, note, color])
+                time.sleep(0.5)  # Adjust timing of color changes
+
+        self.color_thread = threading.Thread(target=cycle_colors, daemon=True)
+        self.color_thread.start()
+
+    def set_dynamic_button(self, button: LaunchpadButton, is_dynamic: bool = True):
+        self.dynamic_buttons[button.note] = is_dynamic
+        if not is_dynamic:
+            self.set_button_color(button)  # Reset to original color if not dynamic
